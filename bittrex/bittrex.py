@@ -30,6 +30,7 @@ SELL_ORDERBOOK = 'sell'
 BOTH_ORDERBOOK = 'both'
 
 BASE_URL = 'https://bittrex.com/api/v1.1/{method_set}/{method}?'
+BASE_URL_V2 = 'https://bittrex.com/Api/v2.0/pub/market/{method}'
 
 MARKET_SET = {
     'getopenorders',
@@ -107,6 +108,7 @@ class Bittrex(object):
         :return: JSON response from Bittrex
         :rtype : dict
         """
+
         if not options:
             options = {}
         nonce = str(int(time.time() * 1000))
@@ -117,17 +119,23 @@ class Bittrex(object):
         elif method in ACCOUNT_SET:
             method_set = 'account'
 
-        request_url = BASE_URL.format(method_set=method_set, method=method)
+        if(method == 'GetTicks'):
+            request_url = BASE_URL_V2.format(method=method+"?")
+        else:
+            request_url = BASE_URL.format(method_set=method_set, method=method)
+
 
         if method_set != 'public':
             request_url = "{0}apikey={1}&nonce={2}&".format(
                 request_url, self.api_key, nonce)
 
         request_url += urlencode(options)
+        print request_url
 
         apisign = hmac.new(self.api_secret.encode(),
                            request_url.encode(),
                            hashlib.sha512).hexdigest()
+
         return self.dispatch(request_url, apisign)
 
     def get_markets(self):
@@ -159,6 +167,37 @@ class Bittrex(object):
         :rtype : dict
         """
         return self.api_query('getmarkets')
+
+    def get_candles(self,market,tickInterval):
+        """
+        Used to get all tick candle for a market.
+
+        Endpoint: https://bittrex.com/Api/v2.0/pub/market/GetTicks
+
+        Example  ::
+            { success: true,
+              message: '',
+              result:
+               [ { O: 421.20630125,
+                   H: 424.03951276,
+                   L: 421.20630125,
+                   C: 421.20630125,
+                   V: 0.05187504,
+                   T: '2016-04-08T00:00:00',
+                   BV: 21.87921187 },
+                 { O: 420.206,
+                   H: 420.206,
+                   L: 416.78743422,
+                   C: 416.78743422,
+                   V: 2.42281573,
+                   T: '2016-04-09T00:00:00',
+                   BV: 1012.63286332 }]
+            }
+
+        :return: Available tick candle in JSON
+        :rtype: dict
+        """
+        return self.api_query('GetTicks',{'marketName':market,'tickInterval':tickInterval})
 
     def get_currencies(self):
         """
