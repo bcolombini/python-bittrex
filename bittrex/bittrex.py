@@ -130,8 +130,7 @@ class Bittrex(object):
                 request_url, self.api_key, nonce)
 
         request_url += urlencode(options)
-        print request_url
-
+    
         apisign = hmac.new(self.api_secret.encode(),
                            request_url.encode(),
                            hashlib.sha512).hexdigest()
