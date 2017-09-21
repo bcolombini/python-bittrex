@@ -130,7 +130,7 @@ class Bittrex(object):
                 request_url, self.api_key, nonce)
 
         request_url += urlencode(options)
-    
+
         apisign = hmac.new(self.api_secret.encode(),
                            request_url.encode(),
                            hashlib.sha512).hexdigest()
@@ -143,6 +143,9 @@ class Bittrex(object):
         at Bittrex along with other meta data.
 
         Endpoint: /public/getmarkets
+
+        :Params:
+            tickInterval: oneMin , fiveMin , hour, thirtyMin, Day
 
         Example ::
             {'success': True,
